@@ -10,6 +10,7 @@ from github import Github, GitObject, GitRelease, Repository, Tag, GithubExcepti
 
 CODEQL_HOME = environ['CODEQL_HOME']
 logger = logging.getLogger()
+#logger.setLevel(logging.INFO)
 CODEQL_GITHUB_URL = 'https://github.com/github/codeql-cli-binaries'
 CODEQL_QUERIES_URL = 'https://github.com/github/codeql'
 CODEQL_GO_QUERIES_URL = 'https://github.com/github/codeql-go'
@@ -42,13 +43,13 @@ def check_output_wrapper(*args, **kwargs):
         Thin wrapper around subprocess
     """
 
-    print('Executing %s, %s', args, kwargs)
+    logger.debug('Executing %s, %s', args, kwargs)
     try:
         return check_output(*args, **kwargs)
     except CalledProcessError as msg:
         logger.warning('Error %s,%s,%s from command.', msg.returncode, msg.output, msg.stderr)
         logger.debug('Output: %s', msg.output)
-        #sys.exit(ERROR_EXECUTING_COMMAND);
+        sys.exit(ERROR_EXECUTING_COMMAND);
 
 def setup():
     """
@@ -67,6 +68,7 @@ def setup():
 def get_latest_codeql():
     # what version do we have?
     current_installed_version = get_current_version()
+    logger.info(f'Current codeql version: {current_installed_version}')
     latest_online_version = get_latest_codeql_github_version()
     if current_installed_version != latest_online_version.title:
         # we got a newer version online, download and install it
@@ -84,7 +86,6 @@ def get_current_version():
         logger.error("Could not determine existing codeql version")
         sys.exit(ERROR_EXECUTING_CODEQL)
     version = f'v{version_match.group(1)}'
-    print("Version: " , version)
     return version
 
 def get_latest_codeql_github_version():
@@ -115,7 +116,7 @@ def download_and_install_latest_codeql(github_version):
     else:
         sys.exit(ERROR_UNKNOWN_OS)
 
-    logger.info("Downloading codeql-cli...")
+    logger.info(f'Downloading codeql-cli version {github_version.title}...')
     check_output_wrapper(f"wget -q {download_url} -O {download_path}", shell=True).decode("utf-8")
     install_codeql_cli(download_path)
     #rm /tmp/codeql_linux.zip
@@ -128,11 +129,11 @@ def install_codeql_cli(download_path):
 
 def download_and_install_latest_codeql_queries():
     logger.info("Downloading codeql queries...")
-    codeql_repo_dir = f'{CODEQL_HOME}/codeql-home/codeql-repo'
+    codeql_repo_dir = f'{CODEQL_HOME}/codeql-repo'
     wipe_and_create_dir(codeql_repo_dir)
     ret1 = check_output_wrapper(f'git clone {CODEQL_QUERIES_URL} {codeql_repo_dir}', shell=True)
 
-    codeql_go_repo_dir = f'{CODEQL_HOME}/codeql-home/codeql-go-repo'
+    codeql_go_repo_dir = f'{CODEQL_HOME}/codeql-go-repo'
     wipe_and_create_dir(codeql_go_repo_dir)
     ret2 = check_output_wrapper(f'git clone {CODEQL_GO_QUERIES_URL} {codeql_go_repo_dir}', shell=True)
     if ret1 is CalledProcessError or ret2 is CalledProcessError:

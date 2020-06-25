@@ -45,11 +45,13 @@ RUN git clone https://github.com/github/codeql-go ${CODEQL_HOME}/codeql-go-repo
 # Clone our setup and run scripts
 #RUN git clone https://github.com/github/codeql-docker /usr/local/startup_scripts
 RUN mkdir -p /usr/local/startup_scripts
-COPY docker/setup.py /usr/local/startup_scripts/
-COPY docker/requirements.txt /usr/local/startup_scripts/
+RUN ls -al /usr/local/startup_scripts
+#COPY docker/setup.py /usr/local/startup_scripts/
+COPY docker /usr/local/startup_scripts/
+RUN ls -al /usr/local/startup_scripts
 RUN pip3 install --upgrade pip \
-    && pip3 install -r $/usr/local/startup_scripts/requirements.txt
+    && pip3 install -r /usr/local/startup_scripts/requirements.txt
 
 ENV PATH="${CODEQL_HOME}/codeql:${PATH}"
 
-ENTRYPOINT ["/"]
+ENTRYPOINT ["python3", "/usr/local/startup_scripts/setup.py"]
