@@ -1,5 +1,5 @@
 FROM ubuntu:18.04 AS codeql_base
-LABEL maintainer="Github codeql team"
+LABEL maintainer="Suraj Jacob"
     
 # install/update basics and python
 RUN apt-get update && \
